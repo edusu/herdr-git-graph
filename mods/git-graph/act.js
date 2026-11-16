@@ -32,6 +32,12 @@ export function openDialog(action, ctx) {
   return true;
 }
 
+// The Walkthrough mod's dialog, at the size its own command opens it.
+export function openWalkthrough(action, ctx) {
+  openOverlay({ mod: "walkthrough", kind: "dialog", modal: true, width: 0.74, height: 0.8,
+    props: { folder: ctx.root, scope: "commit", commit: action.hash, since: action.since } });
+}
+
 export function showChanges() {
   run("layout.select", { stack: "panel-body", child: "changes" });
   run("layout.show", { id: "panel" });

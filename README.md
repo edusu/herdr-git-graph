@@ -43,7 +43,8 @@ extension).
   - a branch: checkout, rename, delete, merge into the current branch, rebase onto it, push, copy name
   - a remote branch: checkout, merge, delete it on the remote, copy name
   - a tag: delete, push, copy name
-  - a commit: add tag, create branch, checkout, cherry pick, revert, merge, rebase, reset (soft, mixed, hard), copy hash or subject
+  - a commit: add tag, create branch, checkout, cherry pick, revert, merge, rebase, reset (soft, mixed, hard), copy hash or subject;
+    with the [Walkthrough](https://github.com/dmazlum/herdr-walkthrough) mod installed, a walkthrough of that commit or of everything from it to HEAD
   - uncommitted changes: commit (staging every change first, or only what's
     staged), stash, reset, show them in Herdr's Changes panel
 - **Commit details.** Click a commit for its message, hash, parents, author, date

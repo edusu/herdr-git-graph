@@ -187,6 +187,8 @@ export function menuFor(target, ctx) {
       section(!here && item(`Merge into ${cur}…`, "merge", { type: "merge", ref: hash, what: `commit ${short}` }),
         !here && item(`Rebase ${cur} on this commit…`, "rebase", { type: "rebase", ref: hash, what: `commit ${short}` }),
         item(`Reset ${cur} to this commit…`, "reset", { type: "reset", hash, short })),
+      section(target.walkthrough && item("Walkthrough of this commit", "commit", { type: "walkthrough", hash }),
+        target.walkthrough && target.behind && item(`Walkthrough from here to ${cur}`, "commit", { type: "walkthrough", hash: ctx.head, since: hash })),
       section(item("Copy commit hash", "copy", { type: "copy", text: hash }),
         item("Copy commit subject", "copy", { type: "copy", text: c.subject })),
     ];
@@ -194,6 +196,18 @@ export function menuFor(target, ctx) {
   const out = [];
   for (const s of sections.filter((s) => s.length)) { if (out.length) out.push({ separator: true }); out.push(...s); }
   return out;
+}
+
+/** Whether `hash` is behind `head` in the loaded commits: one of its ancestors, and not `head` itself. */
+export function isBehind(commits, hash, head) {
+  const parents = new Map(commits.map((c) => [c.hash, c.parents]));
+  const seen = new Set(), todo = [...(parents.get(head) ?? [])];
+  while (todo.length) {
+    const h = todo.pop();
+    if (h === hash) return true;
+    if (!seen.has(h)) { seen.add(h); todo.push(...(parents.get(h) ?? [])); }
+  }
+  return false;
 }
 
 export const menuHeight = (items) => 10 + items.reduce((n, i) => n + (i.separator ? 9 : 30), 0);

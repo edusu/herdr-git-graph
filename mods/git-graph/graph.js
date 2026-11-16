@@ -3,10 +3,10 @@
 // a pane. Labels take double-clicks (checkout) and right-clicks (menus).
 import { div, svg, PathBuilder } from "gpui-kit";
 import { v_flex, h_flex, Scrollbar, v_virtual_list } from "gpui-base";
-import { spaces, panes, focused, layout, exec, watchFolder, readTextFile, theme, settings, props, shared, setShared, openOverlay, home, notify, knownAgents, updates } from "herdr";
+import { spaces, panes, focused, layout, exec, watchFolder, readTextFile, theme, settings, props, shared, setShared, openOverlay, home, appHome, notify, knownAgents, updates } from "herdr";
 import { layoutLanes } from "./lanes.js";
 import { READ, STATUS, UNCOMMITTED, LABEL, logArgs, parseLog, parseStatus, withUncommitted, labelsOf, hitLabel,
-  menuFor, menuHeight, fileArgs, joinFiles, diffArgs, diffRows } from "./git.js";
+  menuFor, menuHeight, isBehind, fileArgs, joinFiles, diffArgs, diffRows } from "./git.js";
 import { perform, openDialog, showChanges } from "./act.js";
 import { icon } from "./menu.js";
 import { available, check, openUpdate, newer } from "./update.js";
@@ -142,6 +142,9 @@ const tagsShown = () => shared("git-graph.tags") === true;
 export class Graph {
   init(cx) {
     this.folder = props()?.folder ?? null;
+    // Read once: installing the Walkthrough mod shows its menu items after the next reload.
+    this.hasWalkthrough = false;
+    readTextFile(`${appHome()}/mods/walkthrough/mod.json`).then((raw) => { this.hasWalkthrough = raw !== null; }).catch(() => {});
     // A scrollbar finds its list by name: each copy (panel, pane) needs its own.
     this.listId = `graph-rows-${Math.random().toString(36).slice(2)}`;
     this.diffId = `${this.listId}-diff`;
@@ -533,7 +536,8 @@ export class Graph {
     const hit = commit.uncommitted ? null : hitLabel(this.labels.get(key), x, this.graphWidth(), this.labelLimit());
     const target = commit.uncommitted ? { kind: "uncommitted", commit: brief(commit), staged: this.files.some((f) => f.staged) }
       : hit && hit.part.kind !== "head" ? { kind: hit.part.kind, name: hit.part.name, commit: brief(commit) }
-      : { kind: "commit", commit: brief(commit) };
+      // The walkthrough runs Git on this computer.
+      : { kind: "commit", commit: brief(commit), walkthrough: this.hasWalkthrough && !this.on, behind: isBehind(this.commits, commit.hash, this.head) };
     const items = menuFor(target, this.ctx);
     openOverlay({ mod: "git-graph", kind: "popup", at: "pointer", width: 268, height: menuHeight(items), props: { role: "menu", target, ctx: this.ctx } });
   }

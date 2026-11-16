@@ -4,7 +4,7 @@ import { div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { props, closeOverlay, notify, theme, run } from "herdr";
 import { menuFor } from "./git.js";
-import { perform, openDialog, showChanges } from "./act.js";
+import { perform, openDialog, showChanges, openWalkthrough } from "./act.js";
 
 // A glyph of this mod, or another mod's icon by its path (Herdr's own Changes icon).
 export const icon = (name) => (name.includes("/") ? name : `mods/git-graph/icons/${name}.svg`);
@@ -36,6 +36,9 @@ export class Menu {
     } else if (a.type === "showChanges") {
       closeOverlay(overlay);
       showChanges();
+    } else if (a.type === "walkthrough") {
+      closeOverlay(overlay);
+      openWalkthrough(a, ctx);
     } else if (openDialog(a, ctx)) {
       closeOverlay(overlay);
     } else {

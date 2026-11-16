@@ -240,7 +240,10 @@ or `ansi1` when the action or the chosen mode destroys something.
   label, the remote menu (Checkout, Merge, Delete remote branch, Copy name); on
   a tag, Delete, Push, Copy name; anywhere else, the commit menu (Add tag,
   Create branch, Checkout, Cherry pick, Revert, Merge, Rebase, Reset, Copy hash,
-  Copy subject; Checkout, Cherry pick, Merge and Rebase left out on HEAD); on the
+  Copy subject; Checkout, Cherry pick, Merge and Rebase left out on HEAD; and,
+  before the copy items when `mods/walkthrough/mod.json` exists (read once at start)
+  and the folder is on this computer, "Walkthrough of this commit" and, for a commit
+  behind HEAD in the loaded history, "Walkthrough from here to <current>"); on the
   uncommitted row: Commit, Stash, Reset uncommitted changes, Show in Changes panel.
   Push needs a remote.
 - **Actions** run as argv, stopping at the first failure. With no dialog
@@ -306,7 +309,10 @@ or `ansi1` when the action or the chosen mode destroys something.
 - Herdr's `mods/changes/changes.svg` for the Show in Changes item; its own icons
   in `icons/` (Lucide-style, ISC notice there).
 - Commands: `layout.select` / `layout.show` (`panel-body` → `changes`, `panel`)
-  for Show in Changes. Programs: `git` only, through `exec(…, { cwd, on })`.
+  for Show in Changes. The walkthrough items close the menu and open the `walkthrough`
+  mod's dialog (modal, 0.74 × 0.8 of the window) with props
+  `{ folder, scope: "commit", commit, since }`: the commit alone, or `since` the
+  clicked commit and `commit` HEAD. Programs: `git` only, through `exec(…, { cwd, on })`.
 
 ## Watch out
 

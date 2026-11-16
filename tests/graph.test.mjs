@@ -130,6 +130,15 @@ const items = G.menuFor({ kind: "commit", commit: commits.find((c) => c.subject 
 assert.ok(!items[0].separator && !items.at(-1).separator && items.every((it, i) => !(it.separator && items[i + 1]?.separator)), "separators only between sections");
 assert.equal(G.menuHeight(items), 10 + items.filter((i) => !i.separator).length * 30 + items.filter((i) => i.separator).length * 9);
 assert.ok(labelsIn(G.menuFor({ kind: "tag", name: "v1", commit: tip }, { ...ctx, remotes: [] })).every((l) => !l.startsWith("Push")), "no push without remotes");
+{
+  const two = commits.find((c) => c.subject === "two"), head = ctx.head;
+  const walk = (target) => G.menuFor({ kind: "commit", walkthrough: true, ...target }, ctx).filter((i) => i.action?.type === "walkthrough").map((i) => i.action);
+  assert.ok(items.every((i) => i.action?.type !== "walkthrough"), "no walkthrough items without the mod");
+  assert.equal(G.isBehind(commits, two.hash, head), true); assert.equal(G.isBehind(commits, head, head), false, "HEAD isn't behind itself");
+  assert.equal(G.isBehind(commits, head, two.hash), false, "a descendant isn't behind");
+  assert.deepEqual(walk({ commit: two, behind: true }), [{ type: "walkthrough", hash: two.hash }, { type: "walkthrough", hash: head, since: two.hash }]);
+  assert.deepEqual(walk({ commit: two, behind: false }), [{ type: "walkthrough", hash: two.hash }], "no range from a commit off HEAD's history");
+}
 console.log("menus ok");
 
 // ---- validation: names never become options
