@@ -10,7 +10,7 @@ import { READ, STATUS, UNCOMMITTED, LABEL, logArgs, parseLog, parseStatus, withU
 import { perform, openDialog, showChanges } from "./act.js";
 import { icon } from "./menu.js";
 import { available, check, openUpdate, newer } from "./update.js";
-import { depthOf, unsearched, findArgs, parseFound, REPO_STATUS, LATEST_TAG, FETCH, REMOTES, fetchable, parseRepoStatus, parseRemotes, webUrl, syncOf } from "./repos.js";
+import { splitSource, depthOf, unsearched, findArgs, parseFound, REPO_STATUS, LATEST_TAG, FETCH, REMOTES, fetchable, parseRepoStatus, parseRemotes, webUrl, syncOf } from "./repos.js";
 
 // The frame the shown tab's panes are drawn in, so the panel beside them takes the
 // same corner radius; Herdr's own pane mod walks the same one (mods/pane/main.js).
@@ -26,10 +26,15 @@ function paneFrame(node) {
   return null;
 }
 
-function location(folder) {
+// A focused mod pane (this graph as a split, or any other) has no folder: the
+// last one stays. A pane split off a terminal takes the focus before it has a
+// last one, so it starts from that terminal's folder, not the space's.
+function location(folder, last) {
   if (folder) return { cwd: folder, on: null };
-  const space = spaces().find((s) => s.active), f = focused();
-  const pane = f?.pane ? panes().find((p) => p.pane === f.pane) : null;
+  const space = spaces().find((s) => s.active), f = focused(), all = panes();
+  const at = f?.pane ? all.findIndex((p) => p.pane === f.pane) : -1;
+  if (at >= 0 && !all[at].terminal && last) return last;
+  const pane = at >= 0 ? splitSource(all, at) : null;
   const on = f?.pane === null ? (f.terminal?.includes("/") ? f.terminal.split("/")[0] : null) : space?.machine ?? null;
   return { cwd: pane?.cwd || f?.cwd || space?.folder, on };
 }
@@ -169,7 +174,9 @@ export class Graph {
     check();
   }
 
-  key() { return JSON.stringify(location(this.folder)); }
+  where() { return (this.last = location(this.folder, this.last)); }
+
+  key() { return JSON.stringify(this.where()); }
 
   reset() {
     Object.assign(this, folderState());
@@ -221,7 +228,7 @@ export class Graph {
   // load for the old one finds itself stale and drops its result.
   // timer: the 15 s re-read, which doesn't search a folder again that held no repositories.
   refresh(cx, full = true, timer = false) {
-    const { cwd, on } = location(this.folder), context = this.key();
+    const { cwd, on } = this.where(), context = JSON.stringify({ cwd, on });
     if (context !== this.context) { this.enter(context); full = true; }
     if (!cwd) { this.state = "nofolder"; return; }
     // A repository opened from the Manygit list loads in place of the folder.

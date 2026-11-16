@@ -132,7 +132,9 @@ adds Git beside them (your agent can do it in a minute), by cloning Herdr's
 
 ### Or open it as a pane
 
-Beside a terminal, for a wider view of one repository:
+Beside a terminal, for a wider view of its repository. Without `props` it shows
+the terminal it was split from, and follows the focused terminal from then on;
+with `props.folder` it always shows that folder:
 
 ```sh
 herdr-app do pane.split '{"direction":"right","mod":"git-graph","props":{"folder":"/path/to/repo"}}'

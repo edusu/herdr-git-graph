@@ -330,6 +330,17 @@ assert.throws(() => G.commandsFor({ type: "fetch-unknown" }), /Unknown/);
 assert.throws(() => G.fileArgs({ hash: "--output=unexpected", parents: [] }), /identity/);
 assert.throws(() => G.diffArgs({ hash: tip.hash, parents: ["--bad"] }, "file"), /identity/);
 console.log("untrusted history ok");
+
+// ---- which terminal a graph pane split off follows before it has a folder of its own
+{
+  const t = (pane, tab, terminal) => ({ pane, tab, terminal, cwd: terminal && `/${terminal}` });
+  const all = [t("a", "1", "t1"), t("b", "2", "t2"), t("c", "2", "t3"), t("g", "2", null), t("h", "3", null), t("d", "3", "t4")];
+  assert.equal(R.splitSource(all, 2).cwd, "/t3", "a terminal is its own source");
+  assert.equal(R.splitSource(all, 3).cwd, "/t3", "the terminal right before the split, not the tab's first");
+  assert.equal(R.splitSource(all, 4).cwd, "/t4", "no terminal before it in its tab: the tab's first");
+  assert.equal(R.splitSource([t("g", "1", null)], 0), null, "a tab of mods only");
+}
+console.log("split source ok");
 rmSync(base, { recursive: true, force: true });
 // ---- Manygit: finding repositories under a folder, and one status call each
 {

@@ -164,7 +164,10 @@ or `ansi1` when the action or the chosen mode destroys something.
 - Agent statuses (working, blocked, done, idle) aren't shown: this is a git view.
   Nothing animates.
 - **Which repository**: the focused pane's live folder (`panes()[i].cwd`), else
-  `focused().cwd`, else the space's folder, on the space's machine. Opened with
+  `focused().cwd`, else the space's folder, on the space's machine. A focused mod
+  pane (the graph as a split, or any other) has no folder: the last one stays; a
+  graph just split off a terminal (the split takes the focus) starts from that
+  terminal, the one before it in `panes()` in its tab. Opened with
   `props.folder` (as a pane), always that folder, here. If it's a repository,
   use it; otherwise it's a Manygit folder when it holds repositories. A home
   folder and any folder above it aren't searched (too big, and on macOS walking

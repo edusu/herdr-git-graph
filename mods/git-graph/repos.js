@@ -3,6 +3,15 @@
 // real folders; graph.js does the exec.
 import { READ } from "./git.js";
 
+// The terminal a mod pane at all[at] was split from: the one before it in its
+// tab (a split lands right after its pane), else the tab's first terminal.
+export function splitSource(all, at) {
+  const own = all[at];
+  if (own.terminal) return own;
+  const here = (p) => p.tab === own.tab && p.terminal;
+  return all.slice(0, at).reverse().find(here) ?? all.find(here) ?? null;
+}
+
 export const DEPTH = { min: 1, max: 5, default: 3 };
 // Never descended into: manygit's list, plus every hidden folder and macOS's
 // Library (huge, and nobody keeps repositories there).
