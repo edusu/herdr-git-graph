@@ -662,8 +662,8 @@ export class Graph {
         .child(div().w(this.cols.hash).flex_none().font_family(mono).text_size(11).text_color(t.dim).child(commit.uncommitted ? "*" : commit.hash.slice(0, 8))));
   }
 
-  iconButton(id, glyph, tip, active, action, t) {
-    return h_flex().id(id).h(24).px(6).gap(5).flex_none().items_center().rounded(6).text_size(11.5).cursor_pointer()
+  iconButton(id, glyph, label, tip, active, action, t) {
+    return h_flex().id(id).tooltip(label).accessibility_label(label).h(24).px(6).gap(5).flex_none().items_center().rounded(6).text_size(11.5).cursor_pointer()
       .text_color(active ? t.foreground : t.muted).when(active, (e) => e.bg(t.selected)).hover((s) => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", (_e, cx) => cx.stop_propagation()).on_click(action)
       .child(svg(icon(glyph)).size(13).flex_none()).when(Boolean(tip), (e) => e.child(tip));
@@ -679,10 +679,10 @@ export class Graph {
     return h_flex().h(42).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border)
       .when(!repo, (e) => e.child(div().text_size(13).font_semibold().child(ws ? "Manygit" : "Git")))
       .when(Boolean(repo), (e) => e
-        .child(h_flex().id("graph-back").h(24).pl(2).pr(6).gap(3).flex_none().items_center().rounded(6).cursor_pointer()
+        .child(h_flex().id("graph-back").tooltip("Back to repositories").accessibility_label("Back to repositories").h(24).pl(2).pr(6).gap(3).flex_none().items_center().rounded(6).cursor_pointer()
           .hover((s) => s.bg(t.hover)).on_click((_e, cx) => this.back(cx))
           .child(svg(icon("back")).size(14).flex_none().text_color(t.muted)).child(div().text_size(13).font_semibold().child("Manygit")))
-        .child(h_flex().id("graph-repository").h(22).px(7).gap(5).min_w(0).items_center().rounded(6).cursor_pointer()
+        .child(h_flex().id("graph-repository").tooltip("Switch repository").accessibility_label("Switch repository").h(22).px(7).gap(5).min_w(0).items_center().rounded(6).cursor_pointer()
           .bg(this.picking ? t.selected : t.raised).text_color(t.foreground).hover((s) => s.bg(t.hover)).on_click((_e, cx) => this.togglePicker(cx))
           .child(svg(icon("folder")).size(12).flex_none()).child(div().min_w(0).truncate().text_size(11.5).font_semibold().child(repo.name))))
       .when(ready && Boolean(where), (e) => e.child(h_flex().h(22).px(7).gap(5).min_w(0).items_center().rounded(6).bg(t.accent + "26").text_color(t.accent)
@@ -690,16 +690,16 @@ export class Graph {
       .when(this.state === "workspace", (e) => e.child(div().flex_none().text_size(11.5).text_color(t.dim).child(count(ws.repos.length, "repo"))))
       .child(div().flex_1())
       // A newer release: a dot, and the update window on click.
-      .when(Boolean(available()), (e) => e.child(h_flex().id("graph-update").h(24).px(7).gap(5).flex_none().items_center().rounded(6).text_size(11.5)
+      .when(Boolean(available()), (e) => e.child(h_flex().id("graph-update").tooltip("View graph update").accessibility_label("View graph update").h(24).px(7).gap(5).flex_none().items_center().rounded(6).text_size(11.5)
         .cursor_pointer().text_color(t.accent).hover((s) => s.bg(t.hover)).on_mouse_down("left", (_e, cx) => cx.stop_propagation())
         .on_click(() => openUpdate()).child(div().size(6).rounded(3).bg(t.accent)).child("Update Graph")))
-      .when(ready && this.remoteNames?.length > 0, (e) => e.child(this.iconButton("graph-fetch", "fetch", this.fetching ? "Fetching…" : null, false, (_e, cx) => this.fetch(cx), t)))
+      .when(ready && this.remoteNames?.length > 0, (e) => e.child(this.iconButton("graph-fetch", "fetch", "Fetch from remote", this.fetching ? "Fetching…" : null, false, (_e, cx) => this.fetch(cx), t)))
       .when(this.state === "workspace", (e) => {
         const run = this.fetchAll?.root === ws.root ? this.fetchAll : null;
-        return e.child(this.iconButton("graph-fetch-all", "fetch", run ? `Fetching ${run.done}/${run.total}…` : "Fetch all", Boolean(run), (_e, cx) => this.fetchEvery(cx), t));
+        return e.child(this.iconButton("graph-fetch-all", "fetch", "Fetch all repositories", run ? `Fetching ${run.done}/${run.total}…` : "Fetch all", Boolean(run), (_e, cx) => this.fetchEvery(cx), t));
       })
-      .when(this.state !== "nofolder", (e) => e.child(this.iconButton("graph-refresh", "refresh", null, false, (_e, cx) => this.refresh(cx), t)))
-      .when(settingsShown, (e) => e.child(this.iconButton("graph-settings", "settings", null, false, () => this.openSettings(), t)));
+      .when(this.state !== "nofolder", (e) => e.child(this.iconButton("graph-refresh", "refresh", "Refresh repository data", null, false, (_e, cx) => this.refresh(cx), t)))
+      .when(settingsShown, (e) => e.child(this.iconButton("graph-settings", "settings", "Graph settings", null, false, () => this.openSettings(), t)));
   }
 
   openSettings() {

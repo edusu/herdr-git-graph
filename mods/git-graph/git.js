@@ -190,7 +190,8 @@ export function menuFor(target, ctx) {
       section(target.walkthrough && item("Walkthrough of this commit", "commit", { type: "walkthrough", hash }),
         target.walkthrough && target.behind && item(`Walkthrough from here to ${cur}`, "commit", { type: "walkthrough", hash: ctx.head, since: hash })),
       section(item("Copy commit hash", "copy", { type: "copy", text: hash }),
-        item("Copy commit subject", "copy", { type: "copy", text: c.subject })),
+        item("Copy commit subject", "copy", { type: "copy", text: c.subject }),
+        item("Copy full commit message", "copy", { type: "copyMessage", hash })),
     ];
   }
   const out = [];

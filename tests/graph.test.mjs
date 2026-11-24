@@ -1,13 +1,14 @@
 // Tests the mod's git logic against real throwaway repos (a bare "remote"
 // included): parsing, labels and where they sit, lanes, menus, validation,
 // and every action the menus run. Run: node tests/graph.test.mjs
+import { readCommitMessage } from "../mods/git-graph/copy-message.js";
 import * as G from "../mods/git-graph/git.js";
 import { layoutLanes } from "../mods/git-graph/lanes.js";
 import * as R from "../mods/git-graph/repos.js";
 import { executeAction } from "../mods/git-graph/execute.js";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, statSync, symlinkSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, statSync, symlinkSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import assert from "node:assert/strict";
 
@@ -139,6 +140,21 @@ assert.ok(labelsIn(G.menuFor({ kind: "tag", name: "v1", commit: tip }, { ...ctx,
   assert.deepEqual(walk({ commit: two, behind: true }), [{ type: "walkthrough", hash: two.hash }, { type: "walkthrough", hash: head, since: two.hash }]);
   assert.deepEqual(walk({ commit: two, behind: false }), [{ type: "walkthrough", hash: two.hash }], "no range from a commit off HEAD's history");
 }
+const copyMessage = items.find((i) => i.action?.type === "copyMessage");
+assert.equal(copyMessage.label, "Copy full commit message");
+assert.equal(copyMessage.action.hash, commits.find((c) => c.subject === "two").hash);
+const execGit = async (cmd, args, opts) => { assert.equal(cmd, "git"); return git(opts.cwd, args); };
+sh(repo, "commit", "--allow-empty", "-m", "message subject", "-m", "first line\n\nsecond line");
+const messageHash = sh(repo, "rev-parse", "HEAD").trim();
+const fullMessage = await readCommitMessage(messageHash, { root: repo, on: null }, execGit);
+assert.equal(fullMessage.ok, true);
+assert.equal(fullMessage.text, "message subject\n\nfirst line\n\nsecond line\n");
+let calls = 0;
+assert.equal((await readCommitMessage("--help", { root: repo }, () => { calls++; })).ok, false);
+assert.equal(calls, 0);
+assert.equal((await readCommitMessage("0".repeat(40), { root: repo }, execGit)).ok, false);
+assert.equal((await readCommitMessage(messageHash, { root: repo }, async () => { throw new Error("offline"); })).message, "offline");
+sh(repo, "reset", "--hard", "HEAD^");
 console.log("menus ok");
 
 // ---- validation: names never become options
@@ -355,7 +371,7 @@ rmSync(base, { recursive: true, force: true });
   // A folder reached through a symlink (macOS's /tmp, a symlinked checkout) is searched too.
   const link = `${ws}-link`; symlinkSync(ws, link);
   assert.deepEqual(R.parseFound(link, spawnSync("find", R.findArgs(link, 3), { encoding: "utf8" }).stdout).map((r) => r.name), ["a", "b", "c"], "symlinked folder");
-  rmSync(link);
+  unlinkSync(link);
   // Not searched: a home, anything above one, and another machine's usual homes.
   for (const [dir, home, skip] of [["/", "/Users/me", true], ["/Users", "/Users/me", true], ["/Users/me/", "/Users/me", true],
     ["/Users/me/code", "/Users/me", false], ["/home/dev", null, true], ["/root", null, true], ["/mnt/data/dev-vera", null, false], ["/home/dev/work", null, false]]) {

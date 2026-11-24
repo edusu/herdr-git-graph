@@ -43,7 +43,7 @@ extension).
   - a branch: checkout, rename, delete, merge into the current branch, rebase onto it, push, copy name
   - a remote branch: checkout, merge, delete it on the remote, copy name
   - a tag: delete, push, copy name
-  - a commit: add tag, create branch, checkout, cherry pick, revert, merge, rebase, reset (soft, mixed, hard), copy hash or subject;
+  - a commit: add tag, create branch, checkout, cherry pick, revert, merge, rebase, reset (soft, mixed, hard), copy hash, subject, or full commit message;
     with the [Walkthrough](https://github.com/dmazlum/herdr-walkthrough) mod installed, a walkthrough of that commit or of everything from it to HEAD
   - uncommitted changes: commit (staging every change first, or only what's
     staged), stash, reset, show them in Herdr's Changes panel
@@ -170,11 +170,21 @@ real git. The UI was checked in an isolated Herdr window (`HERDR_APP_HOME` and
 
 ## Contributing
 
-Pull requests are welcome.
+Pull requests are welcome, written by hand or with an agent. The same rules
+apply to both.
 
+- **Titles are conventional commits in plain language**, saying what changes:
+  `fix(manygit): a plain repository is no longer searched on every refresh`.
+  That goes for the PR title, which becomes the squashed commit, and for each
+  commit.
+- **The body** gives the problem in a sentence or two, then how you fixed it.
+  End with the model and harness that did the work (`Made with Claude Opus 5.5
+  in Claude Code`), or say you wrote it by hand.
+- **UI changes need before and after images. Motion or timing needs a short
+  video.** Upload them to GitHub by dragging them into the PR description.
+  Never commit PR-only screenshots or assets, such as `.github/pr-assets/`.
+- **One request is one PR.** Split it only when the maintainer asks.
 - Run `npm test` and say in the PR that it passes.
-- **If the change shows on screen, add a screenshot**, before and after when it
-  fixes something you can see. It's the fastest way to review a UI change.
 - Say which Herdr version and OS you tested on, and the zoom if it isn't 1.
 - Update `RECIPE.md` when behavior changes, so the recipe still builds what the
   mod does.

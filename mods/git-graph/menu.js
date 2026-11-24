@@ -2,8 +2,9 @@
 // { role: "menu", target, ctx }. Styled like Herdr's own menu.
 import { div, svg, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
-import { props, closeOverlay, notify, theme, run } from "herdr";
+import { props, closeOverlay, notify, theme, run, exec } from "herdr";
 import { menuFor } from "./git.js";
+import { readCommitMessage } from "./copy-message.js";
 import { perform, openDialog, showChanges, openWalkthrough } from "./act.js";
 
 // A glyph of this mod, or another mod's icon by its path (Herdr's own Changes icon).
@@ -33,6 +34,13 @@ export class Menu {
       cx.write_to_clipboard(a.text);
       closeOverlay(overlay);
       notify({ title: "Copied", body: a.text, level: "success", timeout: 2000 });
+    } else if (a.type === "copyMessage") {
+      this.busy = i;
+      cx.spawn(async (cx) => {
+        const result = await readCommitMessage(a.hash, ctx, exec);
+        if (result.ok) { cx.write_to_clipboard(result.text); closeOverlay(overlay); notify({ title: "Commit message copied", level: "success", timeout: 2000 }); }
+        else { this.busy = null; notify({ title: "Couldn't copy commit message", body: result.message, level: "error" }); cx.notify(); }
+      });
     } else if (a.type === "showChanges") {
       closeOverlay(overlay);
       showChanges();
